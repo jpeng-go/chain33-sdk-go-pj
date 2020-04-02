@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	SECP256k1 = 1
-	SM2       = 2 //TODO
-	ED25519   = 3 //TODO
+	SECP256k1 = "secp256k1"
+	SM2       = "sm2" //TODO
+	ED25519   = "ed25519" //TODO
 )
 
 type CryptoDriver interface {
