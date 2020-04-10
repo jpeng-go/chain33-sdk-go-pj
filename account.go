@@ -1,7 +1,7 @@
 package sdk
 
 import (
-	"gitlab.33.cn/pengjun/reencrypt/sdk/crypto"
+	"gitlab.33.cn/pengjun/chain33-sdk-go/crypto"
 )
 
 type Account struct {
