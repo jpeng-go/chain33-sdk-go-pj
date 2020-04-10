@@ -38,7 +38,7 @@ func (driver *Secp256k1Driver) GeneratePrivateKey() []byte {
 
 func (driver *Secp256k1Driver) PubKeyFromPrivate(privKey []byte) []byte {
 	_, pub := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKey[:])
-	pubSecp256k1 := make([]byte, 32)
+	pubSecp256k1 := make([]byte, 33)
 	copy(pubSecp256k1[:], pub.SerializeCompressed())
 	return pubSecp256k1
 }
@@ -52,6 +52,16 @@ func (driver *Secp256k1Driver) Sign(msg []byte, privKey []byte) []byte {
 	return sig.Serialize()
 }
 
+func PrivateECDSAFromByte(privKey []byte) *secp256k1.PrivateKey {
+	priv, _ := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKey[:])
+	return priv
+}
+
+func PublicECDSAFromByte(pubKey []byte) *secp256k1.PublicKey {
+	pub, _ := secp256k1.ParsePubKey(pubKey, secp256k1.S256())
+	return pub
+}
+
 func GetRandBytes(numBytes int) []byte {
 	b := make([]byte, numBytes)
 	_, err := rand.Read(b)
@@ -61,14 +71,8 @@ func GetRandBytes(numBytes int) []byte {
 	return b
 }
 
-// Sha2Sum Returns hash: SHA256( SHA256( data ) )
-// Where possible, using ShaHash() should be a bit faster
 func Sha256(b []byte) []byte {
-	tmp := sha256.Sum256(b)
-	tmp = sha256.Sum256(tmp[:])
-	return tmp[:]
-}
-
-func AddressFromPubKey(key []byte) (string, error) {
-	return "", nil
+	hasher := sha256.New()
+	hasher.Write(b)
+	return hasher.Sum(nil)
 }

@@ -1,14 +1,14 @@
 package sdk
 
 import (
-	"gitlab.33.cn/pengjun/chain33-sdk-go/crypto"
+	"gitlab.33.cn/pengjun/reencrypt/sdk/crypto"
 )
 
 type Account struct {
-	privateKey  string
-	publicKey   string
-	address     string
-	signType    string
+	PrivateKey  []byte
+	PublicKey   []byte
+	Address     string
+	SignType    string
 }
 
 func NewAccount(signType string) (*Account, error) {
@@ -17,20 +17,17 @@ func NewAccount(signType string) (*Account, error) {
 	}
 
 	account := Account{}
-	account.signType = signType
+	account.SignType = signType
 
 	driver := crypto.NewSignDriver(signType)
-	privKey := driver.GeneratePrivateKey()
-	account.privateKey = ToHex(privKey)
+	account.PrivateKey = driver.GeneratePrivateKey()
+	account.PublicKey  = driver.PubKeyFromPrivate(account.PrivateKey)
 
-	pubKey := driver.PubKeyFromPrivate(privKey)
-	account.publicKey = ToHex(pubKey)
-
-	addr, err := crypto.AddressFromPubKey(pubKey)
+	addr, err := crypto.PubKeyToAddress(account.PublicKey)
 	if err != nil {
 		return nil, err
 	}
-	account.address = addr
+	account.Address = addr
 
 	return &account, nil
 }

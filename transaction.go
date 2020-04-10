@@ -3,18 +3,18 @@ package sdk
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/golang/protobuf/proto"
-	"gitlab.33.cn/pengjun/chain33-sdk-go/crypto"
+	"gitlab.33.cn/pengjun/reencrypt/sdk/crypto"
+	"gitlab.33.cn/pengjun/reencrypt/sdk/types"
 )
 
 func SignRawTransaction(raw string, privateKey string, signType string) (string, error) {
-	var tx Transaction
-	txByteData, err := FromHex(raw)
+	var tx types.Transaction
+	txByteData, err := types.FromHex(raw)
 	if err != nil {
 		return "", err
 	}
 
-	err = proto.Unmarshal(txByteData, &tx)
+	err = types.Decode(txByteData, &tx)
 	if err != nil {
 		return "", err
 	}
@@ -28,26 +28,20 @@ func SignRawTransaction(raw string, privateKey string, signType string) (string,
 		return "", errors.New("signType error")
 	}
 
-	key, err := FromHex(privateKey)
+	key, err := types.FromHex(privateKey)
 	if err != nil {
 		return "", err
 	}
 	pub := signer.PubKeyFromPrivate(key)
-	data, err := proto.Marshal(&tx)
-	if err != nil {
-		return "", err
-	}
+
+	data := types.Encode(&tx)
 	signature := signer.Sign(data, key)
-	tx.Signature = &Signature{
+	tx.Signature = &types.Signature{
 		Ty:        1,
 		Pubkey:    pub,
 		Signature: signature,
 	}
 
-	data, err = proto.Marshal(&tx)
-	if err != nil {
-		return "", err
-	}
-
+	data = types.Encode(&tx)
 	return hex.EncodeToString(data), nil
 }

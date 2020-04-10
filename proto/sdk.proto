@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package sdk;
+package types;
 
 message Transaction {
     bytes     execer    = 1;

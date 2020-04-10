@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -22,7 +23,6 @@ type JSONClient struct {
 	prefix    string
 	tlsVerify bool
 	client    *http.Client
-	key       []byte
 }
 
 func addPrefix(prefix, name string) string {
@@ -33,12 +33,12 @@ func addPrefix(prefix, name string) string {
 }
 
 // NewJSONClient produce a json object
-func NewJSONClient(url string, key []byte) (*JSONClient, error) {
-	return New("Chain33", url, false, key)
+func NewJSONClient(prefix, url string) (*JSONClient, error) {
+	return new(prefix, url, false)
 }
 
 // New produce a jsonclient by perfix and url
-func New(prefix, url string, tlsVerify bool, key []byte) (*JSONClient, error) {
+func new(prefix, url string, tlsVerify bool) (*JSONClient, error) {
 	httpcli := http.DefaultClient
 	if strings.Contains(url, "https") { //暂不校验tls证书
 		httpcli = &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: !tlsVerify}}}
@@ -48,7 +48,6 @@ func New(prefix, url string, tlsVerify bool, key []byte) (*JSONClient, error) {
 		prefix:    prefix,
 		tlsVerify: tlsVerify,
 		client:    httpcli,
-		key:       key,
 	}, nil
 }
 
@@ -100,6 +99,23 @@ func (client *JSONClient) Call(method string, params, resp interface{}) error {
 	if cresp.Result == nil {
 		return errors.New("Empty result")
 	}
+	if msg, ok := resp.(proto.Message); ok {
+		var str json.RawMessage
+		err = json.Unmarshal(*cresp.Result, &str)
+		if err != nil {
+			return err
+		}
+		b, err := str.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		err = json.Unmarshal(b, msg)
+		if err != nil {
+			fmt.Println("err", err)
+			return err
+		}
+		return nil
+	}
 	return json.Unmarshal(*cresp.Result, resp)
 }
 
@@ -110,7 +126,7 @@ func (client *JSONClient) SendTransaction(signedTx string) (string, error) {
 		Token: "BTY",
 		Data: signedTx,
 	}
-	err := client.Call("Chain33.CreateTransaction", send, &res)
+	err := client.Call("Chain33.SendTransaction", send, &res)
 	if err != nil {
 		return "", err
 	}
