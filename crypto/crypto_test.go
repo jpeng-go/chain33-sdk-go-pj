@@ -2,7 +2,7 @@ package  crypto
 
 import (
 	"fmt"
-	"gitlab.33.cn/pengjun/reencrypt/sdk/types"
+	"github.com/jpeng-go/chain33-sdk-go/types"
 	"math/big"
 	"testing"
 )

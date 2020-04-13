@@ -3,8 +3,8 @@ package sdk
 import (
 	"encoding/hex"
 	"errors"
-	"gitlab.33.cn/pengjun/chain33-sdk-go/crypto"
-	"gitlab.33.cn/pengjun/chain33-sdk-go/types"
+	"github.com/jpeng-go/chain33-sdk-go/crypto"
+	"github.com/jpeng-go/chain33-sdk-go/types"
 )
 
 func SignRawTransaction(raw string, privateKey string, signType string) (string, error) {

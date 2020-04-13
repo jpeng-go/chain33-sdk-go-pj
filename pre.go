@@ -4,8 +4,8 @@ import (
 	"crypto/rand"
 	"fmt"
 	secp256k1 "github.com/btcsuite/btcd/btcec"
-	"gitlab.33.cn/pengjun/chain33-sdk-go/crypto"
-	"gitlab.33.cn/pengjun/chain33-sdk-go/types"
+	"github.com/jpeng-go/chain33-sdk-go/crypto"
+	"github.com/jpeng-go/chain33-sdk-go/types"
 
 	"golang.org/x/crypto/blake2b"
 	"math/big"
