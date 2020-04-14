@@ -1,0 +1,111 @@
+package storage
+
+import (
+	"github.com/33cn/chain33/common"
+	"github.com/33cn/chain33/common/crypto"
+	"github.com/33cn/chain33/types"
+	"github.com/jpeng-go/chain33-sdk-go/client"
+	"github.com/stretchr/testify/assert"
+	"testing"
+	"time"
+)
+
+var (
+	privkey = "cc38546e9e659d15e6b4893f0ab32a06d103931a8230b0bde71459d2b27d6944"
+	url     = "http://fd.33.cn:1276"
+)
+
+func TestCreateContentStorageTx(t *testing.T) {
+	//第一次存储
+	tx, err := CreateContentStorageTx("", OpCreate, "", []byte("hello"), "")
+	assert.Nil(t, err)
+	cr, _ := crypto.New("secp256k1")
+	hexbytes, _ := common.FromHex(privkey)
+	priv, _ := cr.PrivKeyFromBytes(hexbytes)
+	tx.Sign(types.SECP256K1, priv)
+	txhash := common.ToHex(tx.Hash())
+	jsonclient, err := client.NewJSONClient("", url)
+	assert.Nil(t, err)
+	signTx := common.ToHex(types.Encode(tx))
+	reply, err := jsonclient.SendTransaction(signTx)
+	assert.Nil(t, err)
+	assert.Equal(t, txhash, reply)
+	time.Sleep(2 * time.Second)
+	detail, err := jsonclient.QueryTransaction(txhash)
+	assert.Nil(t, err)
+	assert.Equal(t, types.ExecOk, int(detail.Receipt.Ty))
+	//查询
+	storage, err := QueryStorageByKey("", url, txhash)
+	assert.Nil(t, err)
+	assert.Equal(t, []byte("hello"), storage.GetContentStorage().Content)
+	//第二次追加  老版本不支持
+	//tx,err=CreateContentStorageTx("",OpAdd,txhash,[]byte("world"),"")
+	//assert.Nil(t,err)
+	//tx.Sign(types.SECP256K1, priv)
+	//signTx =common.ToHex(types.Encode(tx))
+	//_,err=jsonclient.SendTransaction(signTx)
+	//assert.Nil(t,err)
+	//time.Sleep(2*time.Second)
+	////查询
+	//storage,err=QueryStorageByKey("",url,txhash)
+	//assert.Nil(t,err)
+	//assert.Equal(t,[]byte("hello,world"),storage.GetContentStorage().Content)
+
+}
+
+//hash,or link 存证
+func TestCreateHashStorageTx(t *testing.T) {
+	tx, err := CreateHashStorageTx("", "", []byte("123456harrylee"), "")
+	assert.Nil(t, err)
+	//签名
+	cr, _ := crypto.New("secp256k1")
+	hexbytes, _ := common.FromHex(privkey)
+	priv, _ := cr.PrivKeyFromBytes(hexbytes)
+	tx.Sign(types.SECP256K1, priv)
+	txhash := common.ToHex(tx.Hash())
+	jsonclient, err := client.NewJSONClient("", url)
+	assert.Nil(t, err)
+	signTx := common.ToHex(types.Encode(tx))
+	reply, err := jsonclient.SendTransaction(signTx)
+	assert.Nil(t, err)
+	assert.Equal(t, txhash, reply)
+	time.Sleep(time.Second)
+	detail, err := jsonclient.QueryTransaction(txhash)
+	assert.Nil(t, err)
+	assert.Equal(t, types.ExecOk, int(detail.Receipt.Ty))
+	//查询
+	storage, err := QueryStorageByKey("", url, txhash)
+	assert.Nil(t, err)
+	assert.Equal(t, []byte("123456harrylee"), storage.GetHashStorage().Hash)
+}
+
+//hash,or link 存证
+func TestCreateLinkStorageTx(t *testing.T) {
+	tx, err := CreateLinkStorageTx("", "", []byte("hello"), "")
+	assert.Nil(t, err)
+	cr, _ := crypto.New("secp256k1")
+	hexbytes, _ := common.FromHex(privkey)
+	priv, _ := cr.PrivKeyFromBytes(hexbytes)
+	tx.Sign(types.SECP256K1, priv)
+	txhash := common.ToHex(tx.Hash())
+	jsonclient, err := client.NewJSONClient("", url)
+	assert.Nil(t, err)
+	signTx := common.ToHex(types.Encode(tx))
+	reply, err := jsonclient.SendTransaction(signTx)
+	assert.Nil(t, err)
+	assert.Equal(t, txhash, reply)
+	time.Sleep(time.Second)
+	storage, err := QueryStorageByKey("", url, txhash)
+	assert.Nil(t, err)
+	assert.Equal(t, []byte("hello"), storage.GetLinkStorage().Link)
+}
+
+func TestByteFromHex(t *testing.T) {
+	hex := "0x313233343536"
+	data, err := common.FromHex(hex)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(string(data))
+
+}

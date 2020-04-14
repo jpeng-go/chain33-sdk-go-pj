@@ -91,3 +91,10 @@ type TransactionDetail struct {
 	TxProofs   []*TxProof         `json:"txProofs"`
 	FullHash   string             `json:"fullHash"`
 }
+
+// Query4Jrpc query jrpc
+type Query4Jrpc struct {
+	Execer   string          `json:"execer"`
+	FuncName string          `json:"funcName"`
+	Payload  json.RawMessage `json:"payload"`
+}
