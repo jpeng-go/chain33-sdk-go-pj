@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/protobuf/proto"
+
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -119,12 +120,53 @@ func (client *JSONClient) Call(method string, params, resp interface{}) error {
 	return json.Unmarshal(*cresp.Result, resp)
 }
 
+//type ParseFunc func(result *json.RawMessage) (interface{},error)
+//回调函数，用于自定义解析返回得result数据
+func (client *JSONClient) CallBack(method string, params interface{}, ParseFunc func(result json.RawMessage) (interface{}, error)) (interface{}, error) {
+	method = addPrefix(client.prefix, method)
+	req := &clientRequest{}
+	req.Method = method
+	req.Params[0] = params
+	data, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+	postresp, err := client.client.Post(client.url, "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+	defer postresp.Body.Close()
+	b, err := ioutil.ReadAll(postresp.Body)
+	if err != nil {
+		return nil, err
+	}
+	cresp := &clientResponse{}
+	err = json.Unmarshal(b, &cresp)
+	if err != nil {
+		return nil, err
+	}
+	if cresp.Error != nil {
+		x, ok := cresp.Error.(string)
+		if !ok {
+			return nil, fmt.Errorf("invalid error %v", cresp.Error)
+		}
+		if x == "" {
+			x = "unspecified error"
+		}
+		return nil, fmt.Errorf(x)
+	}
+	if cresp.Result == nil {
+		return nil, errors.New("Empty result")
+	}
+	return ParseFunc(*cresp.Result)
+}
+
 // 发送交易
 func (client *JSONClient) SendTransaction(signedTx string) (string, error) {
 	var res string
 	send := &RawParm{
 		Token: "BTY",
-		Data: signedTx,
+		Data:  signedTx,
 	}
 	err := client.Call("Chain33.SendTransaction", send, &res)
 	if err != nil {
