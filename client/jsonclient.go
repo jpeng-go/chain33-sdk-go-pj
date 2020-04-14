@@ -120,9 +120,9 @@ func (client *JSONClient) Call(method string, params, resp interface{}) error {
 	return json.Unmarshal(*cresp.Result, resp)
 }
 
-//type ParseFunc func(result *json.RawMessage) (interface{},error)
+type ParseFunc func(result json.RawMessage) (interface{},error)
 //回调函数，用于自定义解析返回得result数据
-func (client *JSONClient) CallBack(method string, params interface{}, ParseFunc func(result json.RawMessage) (interface{}, error)) (interface{}, error) {
+func (client *JSONClient) CallBack(method string, params interface{},parseFunc ParseFunc) (interface{}, error) {
 	method = addPrefix(client.prefix, method)
 	req := &clientRequest{}
 	req.Method = method
@@ -158,7 +158,7 @@ func (client *JSONClient) CallBack(method string, params interface{}, ParseFunc 
 	if cresp.Result == nil {
 		return nil, errors.New("Empty result")
 	}
-	return ParseFunc(*cresp.Result)
+	return parseFunc(*cresp.Result)
 }
 
 // 发送交易
