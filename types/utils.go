@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	secp256k1 "github.com/btcsuite/btcd/btcec"
 	"github.com/golang/protobuf/proto"
-	"math/big"
 )
 
 //FromHex hex -> []byte
@@ -28,7 +27,7 @@ func ToHex(b []byte) string {
 	if len(hex) == 0 {
 		return ""
 	}
-	return "0x" + hex
+	return hex
 }
 
 //Encode  编码
@@ -46,20 +45,8 @@ func Decode(data []byte, msg proto.Message) error {
 }
 
 // ECDH Calculate a shared secret using elliptic curve Diffie-Hellman
-func ECDH(priv *secp256k1.PrivateKey, pub *secp256k1.PublicKey) *big.Int {
-	x, _ := secp256k1.S256().ScalarMult(pub.X, pub.Y, priv.D.Bytes())
-	return x
-}
-
-func BigToString(num *big.Int) string {
-	return ToHex(num.Bytes())
-}
-
-func StringToBig(num string) *big.Int {
-	numbyte, err := FromHex(num)
-	if err != nil {
-		panic(err)
-	}
-
-	return new(big.Int).SetBytes(numbyte)
+func ECDH(priv *secp256k1.PrivateKey, pub *secp256k1.PublicKey) []byte {
+	ecKey := &secp256k1.PublicKey{}
+	ecKey.X, ecKey.Y = secp256k1.S256().ScalarMult(pub.X, pub.Y, priv.D.Bytes())
+	return ecKey.SerializeCompressed()
 }

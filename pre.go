@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	secp256k1 "github.com/btcsuite/btcd/btcec"
 	"github.com/jpeng-go/chain33-sdk-go/crypto"
@@ -173,7 +174,7 @@ func GenerateKeyFragments(privOwner []byte, pubRecipient []byte, numSplit, thres
 		return nil, err
 	}
 	dAliceHash.Write(pubRecipientKey.X.Bytes())
-	dAliceHash.Write(dh_Alice_poit_x.Bytes())
+	dAliceHash.Write(dh_Alice_poit_x)
 	dAlice := dAliceHash.Sum(nil)
 	dAliceBN := hashToModInt(dAlice)
 
@@ -184,7 +185,7 @@ func GenerateKeyFragments(privOwner []byte, pubRecipient []byte, numSplit, thres
 	kFrags := make([]*KFrag, numSplit)
 	if numSplit == 1 {
 		id := getRandomInt(baseN)
-		kFrags[0] = &KFrag{Random: types.BigToString(id), Value: types.BigToString(f0), PrecurPub: precurPub}
+		kFrags[0] = &KFrag{Random: id.String(), Value: f0.String(), PrecurPub: precurPub}
 	} else {
 		coeffs := makeShamirPolyCoeff(threshold)
 		coeffs = append(coeffs, f0)
@@ -198,11 +199,11 @@ func GenerateKeyFragments(privOwner []byte, pubRecipient []byte, numSplit, thres
 				return nil, err
 			}
 			dShareHash.Write(pubRecipientKey.X.Bytes())
-			dShareHash.Write(dh_Alice_poit_x.Bytes())
+			dShareHash.Write(dh_Alice_poit_x)
 			dShareHash.Write(id.Bytes())
 			share := hashToModInt(dShareHash.Sum(nil))
 			rk := hornerPolyEval(coeffs, share)
-			kFrags[i] = &KFrag{Random: types.BigToString(id), Value: types.BigToString(rk), PrecurPub: precurPub}
+			kFrags[i] = &KFrag{Random: id.String(), Value: rk.String(), PrecurPub: precurPub}
 		}
 	}
 
@@ -224,7 +225,7 @@ func AssembleReencryptFragment(privRecipient []byte, reKeyFrags []*ReKeyFrag) ([
 		return nil, err
 	}
 	dBobHash.Write(privRecipientKey.X.Bytes())
-	dBobHash.Write(dh_Bob_poit_x.Bytes())
+	dBobHash.Write(dh_Bob_poit_x)
 	dhBob := dBobHash.Sum(nil)
 	dhBobBN := hashToModInt(dhBob)
 
@@ -253,13 +254,13 @@ func AssembleReencryptFragment(privRecipient []byte, reKeyFrags []*ReKeyFrag) ([
 				return nil, err
 			}
 			xs.Write(privRecipientKey.X.Bytes())
-			xs.Write(dh_Bob_poit_x.Bytes())
-			randomByte, err := types.FromHex(reKeyFrags[x].Random)
-			if err != nil {
-				fmt.Errorf("get randomByte err", err)
-				return nil, err
+			xs.Write(dh_Bob_poit_x)
+			random, ret := new(big.Int).SetString(reKeyFrags[x].Random, 10)
+			if !ret {
+				fmt.Errorf("AssembleReencryptFragment.get value int",)
+				return nil, errors.New("get big int value from keyFragment failed")
 			}
-			xs.Write(randomByte)
+			xs.Write(random.Bytes())
 			ids[x] = hashToModInt(xs.Sum(nil))
 		}
 
