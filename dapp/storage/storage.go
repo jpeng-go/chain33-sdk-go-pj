@@ -2,8 +2,7 @@ package storage
 
 import (
 	"fmt"
-	"github.com/33cn/chain33/common/address"
-	"github.com/33cn/chain33/types"
+	"github.com/jpeng-go/chain33-sdk-go/crypto"
 	. "github.com/jpeng-go/chain33-sdk-go/types"
 	"math/rand"
 )
@@ -21,7 +20,7 @@ import (
   content和value只能有一个有效值
 */
 //明文存证溯源
-func CreateContentStorageTx(paraName string, op int32, key string, content []byte, value string) (*types.Transaction, error) {
+func CreateContentStorageTx(paraName string, op int32, key string, content []byte, value string) (*Transaction, error) {
 	if op != 0 && op != 1 {
 		return nil, fmt.Errorf("unknow op..,op only 0 or 1,please check!")
 	}
@@ -36,16 +35,16 @@ func CreateContentStorageTx(paraName string, op int32, key string, content []byt
 	}},
 	}
 	if paraName == "" {
-		tx := &types.Transaction{Execer: []byte(StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
+		tx := &Transaction{Execer: []byte(StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
 		return tx, nil
 	} else {
-		tx := &types.Transaction{Execer: []byte(paraName + StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: address.ExecAddress(paraName + StorageX)}
+		tx := &Transaction{Execer: []byte(paraName + StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: crypto.GetExecAddress(paraName + StorageX)}
 		return tx, nil
 	}
 }
 
 //链接存证 paraName 平行链前缀，如果是主链则为空字符串，key唯一性，如果不填默认采用txhash为key
-func CreateLinkStorageTx(paraName string, key string, link []byte, value string) (*types.Transaction, error) {
+func CreateLinkStorageTx(paraName string, key string, link []byte, value string) (*Transaction, error) {
 	payload := &StorageAction{Ty: TyLinkStorageAction, Value: &StorageAction_LinkStorage{&LinkNotaryStorage{
 		Link:                 link,
 		Key:                  key,
@@ -56,16 +55,16 @@ func CreateLinkStorageTx(paraName string, key string, link []byte, value string)
 	}},
 	}
 	if paraName == "" {
-		tx := &types.Transaction{Execer: []byte(StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
+		tx := &Transaction{Execer: []byte(StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
 		return tx, nil
 	} else {
-		tx := &types.Transaction{Execer: []byte(paraName + StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: address.ExecAddress(paraName + StorageX)}
+		tx := &Transaction{Execer: []byte(paraName + StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: crypto.GetExecAddress(paraName + StorageX)}
 		return tx, nil
 	}
 }
 
 //hash存证
-func CreateHashStorageTx(paraName string, key string, hash []byte, value string) (*types.Transaction, error) {
+func CreateHashStorageTx(paraName string, key string, hash []byte, value string) (*Transaction, error) {
 	payload := &StorageAction{Ty: TyHashStorageAction, Value: &StorageAction_HashStorage{&HashOnlyNotaryStorage{
 		Hash:                 hash,
 		Key:                  key,
@@ -76,16 +75,16 @@ func CreateHashStorageTx(paraName string, key string, hash []byte, value string)
 	}},
 	}
 	if paraName == "" {
-		tx := &types.Transaction{Execer: []byte(StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
+		tx := &Transaction{Execer: []byte(StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
 		return tx, nil
 	} else {
-		tx := &types.Transaction{Execer: []byte(paraName + StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: address.ExecAddress(paraName + StorageX)}
+		tx := &Transaction{Execer: []byte(paraName + StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: crypto.GetExecAddress(paraName + StorageX)}
 		return tx, nil
 	}
 }
 
 //隐私加密存储
-func CreateEncryptStorageTx(paraName string, key string, contentHash, encryptContent, nonce []byte, value string) *types.Transaction {
+func CreateEncryptStorageTx(paraName string, key string, contentHash, encryptContent, nonce []byte, value string) *Transaction {
 	payload := &StorageAction{Ty: TyEncryptStorageAction, Value: &StorageAction_EncryptStorage{&EncryptNotaryStorage{
 		ContentHash:          contentHash,
 		EncryptContent:       encryptContent,
@@ -98,16 +97,16 @@ func CreateEncryptStorageTx(paraName string, key string, contentHash, encryptCon
 	}},
 	}
 	if paraName == "" {
-		tx := &types.Transaction{Execer: []byte(StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
+		tx := &Transaction{Execer: []byte(StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
 		return tx
 	} else {
-		tx := &types.Transaction{Execer: []byte(paraName + StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: address.ExecAddress(paraName + StorageX)}
+		tx := &Transaction{Execer: []byte(paraName + StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: crypto.GetExecAddress(paraName + StorageX)}
 		return tx
 	}
 }
 
 //分享隐私加密存储
-func CreateEncryptShareStorageTx(paraName string, key string, contentHash, encryptContent, publickey []byte, value string) *types.Transaction {
+func CreateEncryptShareStorageTx(paraName string, key string, contentHash, encryptContent, publickey []byte, value string) *Transaction {
 	payload := &StorageAction{Ty: TyEncryptShareStorageAction, Value: &StorageAction_EncryptShareStorage{&EncryptShareNotaryStorage{
 		ContentHash:          contentHash,
 		EncryptContent:       encryptContent,
@@ -120,10 +119,10 @@ func CreateEncryptShareStorageTx(paraName string, key string, contentHash, encry
 	}},
 	}
 	if paraName == "" {
-		tx := &types.Transaction{Execer: []byte(StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
+		tx := &Transaction{Execer: []byte(StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: Addr}
 		return tx
 	} else {
-		tx := &types.Transaction{Execer: []byte(paraName + StorageX), Payload: types.Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: address.ExecAddress(paraName + StorageX)}
+		tx := &Transaction{Execer: []byte(paraName + StorageX), Payload: Encode(payload), Fee: 1e5, Nonce: rand.Int63(), To: crypto.GetExecAddress(paraName + StorageX)}
 		return tx
 	}
 }

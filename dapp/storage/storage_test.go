@@ -1,10 +1,10 @@
 package storage
 
 import (
-	"github.com/33cn/chain33/common"
-	"github.com/33cn/chain33/common/crypto"
-	"github.com/33cn/chain33/types"
+	sdk "github.com/jpeng-go/chain33-sdk-go"
 	"github.com/jpeng-go/chain33-sdk-go/client"
+	"github.com/jpeng-go/chain33-sdk-go/crypto"
+	"github.com/jpeng-go/chain33-sdk-go/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -19,14 +19,12 @@ func TestCreateContentStorageTx(t *testing.T) {
 	//第一次存储
 	tx, err := CreateContentStorageTx("", OpCreate, "", []byte("hello"), "")
 	assert.Nil(t, err)
-	cr, _ := crypto.New("secp256k1")
-	hexbytes, _ := common.FromHex(privkey)
-	priv, _ := cr.PrivKeyFromBytes(hexbytes)
-	tx.Sign(types.SECP256K1, priv)
-	txhash := common.ToHex(tx.Hash())
+	hexbytes, _ := types.FromHex(privkey)
+	sdk.Sign(tx, hexbytes, crypto.SECP256K1)
+	txhash := types.ToHexPrefix(sdk.Hash(tx))
 	jsonclient, err := client.NewJSONClient("", url)
 	assert.Nil(t, err)
-	signTx := common.ToHex(types.Encode(tx))
+	signTx := types.ToHexPrefix(types.Encode(tx))
 	reply, err := jsonclient.SendTransaction(signTx)
 	assert.Nil(t, err)
 	assert.Equal(t, txhash, reply)
@@ -42,7 +40,7 @@ func TestCreateContentStorageTx(t *testing.T) {
 	//tx,err=CreateContentStorageTx("",OpAdd,txhash,[]byte("world"),"")
 	//assert.Nil(t,err)
 	//tx.Sign(types.SECP256K1, priv)
-	//signTx =common.ToHex(types.Encode(tx))
+	//signTx =common.ToHexPrefix(types.Encode(tx))
 	//_,err=jsonclient.SendTransaction(signTx)
 	//assert.Nil(t,err)
 	//time.Sleep(2*time.Second)
@@ -58,14 +56,12 @@ func TestCreateHashStorageTx(t *testing.T) {
 	tx, err := CreateHashStorageTx("", "", []byte("123456harrylee"), "")
 	assert.Nil(t, err)
 	//签名
-	cr, _ := crypto.New("secp256k1")
-	hexbytes, _ := common.FromHex(privkey)
-	priv, _ := cr.PrivKeyFromBytes(hexbytes)
-	tx.Sign(types.SECP256K1, priv)
-	txhash := common.ToHex(tx.Hash())
+	hexbytes, _ := types.FromHex(privkey)
+	sdk.Sign(tx, hexbytes, crypto.SECP256K1)
+	txhash := types.ToHexPrefix(sdk.Hash(tx))
 	jsonclient, err := client.NewJSONClient("", url)
 	assert.Nil(t, err)
-	signTx := common.ToHex(types.Encode(tx))
+	signTx := types.ToHexPrefix(types.Encode(tx))
 	reply, err := jsonclient.SendTransaction(signTx)
 	assert.Nil(t, err)
 	assert.Equal(t, txhash, reply)
@@ -83,14 +79,12 @@ func TestCreateHashStorageTx(t *testing.T) {
 func TestCreateLinkStorageTx(t *testing.T) {
 	tx, err := CreateLinkStorageTx("", "", []byte("hello"), "")
 	assert.Nil(t, err)
-	cr, _ := crypto.New("secp256k1")
-	hexbytes, _ := common.FromHex(privkey)
-	priv, _ := cr.PrivKeyFromBytes(hexbytes)
-	tx.Sign(types.SECP256K1, priv)
-	txhash := common.ToHex(tx.Hash())
+	hexbytes, _ := types.FromHex(privkey)
+	sdk.Sign(tx, hexbytes, crypto.SECP256K1)
+	txhash := types.ToHexPrefix(sdk.Hash(tx))
 	jsonclient, err := client.NewJSONClient("", url)
 	assert.Nil(t, err)
-	signTx := common.ToHex(types.Encode(tx))
+	signTx := types.ToHexPrefix(types.Encode(tx))
 	reply, err := jsonclient.SendTransaction(signTx)
 	assert.Nil(t, err)
 	assert.Equal(t, txhash, reply)
@@ -102,7 +96,7 @@ func TestCreateLinkStorageTx(t *testing.T) {
 
 func TestByteFromHex(t *testing.T) {
 	hex := "0x313233343536"
-	data, err := common.FromHex(hex)
+	data, err := types.FromHex(hex)
 	if err != nil {
 		t.Error(err)
 	}

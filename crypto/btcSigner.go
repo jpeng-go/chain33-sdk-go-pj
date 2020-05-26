@@ -2,13 +2,12 @@ package crypto
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	secp256k1 "github.com/btcsuite/btcd/btcec"
 )
 
 var (
-	SECP256k1 = "secp256k1"
-	SM2       = "sm2" //TODO
+	SECP256K1 = "secp256k1"
+	SM2       = "sm2"
 	ED25519   = "ed25519" //TODO
 )
 
@@ -36,12 +35,12 @@ func Sign(msg []byte, privKey []byte) []byte {
 	return sig.Serialize()
 }
 
-func PrivateECDSAFromByte(privKey []byte) *secp256k1.PrivateKey {
+func PrivateFromByte(privKey []byte) *secp256k1.PrivateKey {
 	priv, _ := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKey[:])
 	return priv
 }
 
-func PublicECDSAFromByte(pubKey []byte) *secp256k1.PublicKey {
+func PublicFromByte(pubKey []byte) *secp256k1.PublicKey {
 	pub, _ := secp256k1.ParsePubKey(pubKey, secp256k1.S256())
 	return pub
 }
@@ -53,10 +52,4 @@ func getRandBytes(numBytes int) []byte {
 		panic("Panic on a Crisis" + err.Error())
 	}
 	return b
-}
-
-func Sha256(b []byte) []byte {
-	hasher := sha256.New()
-	hasher.Write(b)
-	return hasher.Sum(nil)
 }

@@ -6,6 +6,13 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+//exec type
+const (
+	ExecErr  = 0
+	ExecPack = 1
+	ExecOk   = 2
+)
+
 //FromHex hex -> []byte
 func FromHex(s string) ([]byte, error) {
 	if len(s) > 1 {
@@ -28,6 +35,16 @@ func ToHex(b []byte) string {
 		return ""
 	}
 	return hex
+}
+
+//ToHex []byte -> hex
+func ToHexPrefix(b []byte) string {
+	hex := hex.EncodeToString(b)
+	// Prefer output of "0x0" instead of "0x"
+	if len(hex) == 0 {
+		return ""
+	}
+	return "0x" + hex
 }
 
 //Encode  编码

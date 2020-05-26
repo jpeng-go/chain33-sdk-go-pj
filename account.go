@@ -15,12 +15,12 @@ type Account struct {
 
 func NewAccount(signType string) (*Account, error) {
     if signType == "" {
-    	signType = crypto.SECP256k1
+    	signType = crypto.SECP256K1
 	}
 
 	account := Account{}
 	account.SignType = signType
-	if signType == crypto.SECP256k1 {
+	if signType == crypto.SECP256K1 {
 		account.PrivateKey = crypto.GeneratePrivateKey()
 		account.PublicKey  = crypto.PubKeyFromPrivate(account.PrivateKey)
 

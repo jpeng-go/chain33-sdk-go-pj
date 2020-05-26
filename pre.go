@@ -38,7 +38,7 @@ func NewEccPoint(pubStr string) (*EccPoit, error) {
 		fmt.Errorf("get reKeyRByte err", err)
 		return nil, err
 	}
-	reKeyR := crypto.PublicECDSAFromByte(reKeyRByte)
+	reKeyR := crypto.PublicFromByte(reKeyRByte)
 	return &EccPoit{x: reKeyR.X, y: reKeyR.Y}, nil
 }
 
@@ -79,10 +79,9 @@ func hashToModInt(digest []byte) *big.Int {
 }
 
 func makeShamirPolyCoeff(threshold int) []*big.Int {
-	driver := crypto.NewSignDriver(crypto.SECP256k1)
 	coeffs := make([]*big.Int, threshold-1)
 	for i,_ := range coeffs {
-		key := crypto.PrivateECDSAFromByte(driver.GeneratePrivateKey())
+		key := crypto.PrivateFromByte(crypto.GeneratePrivateKey())
 		coeffs[i] = key.D
 	}
 
@@ -141,11 +140,10 @@ func getRandomInt(order *big.Int) *big.Int {
 }
 
 func GenerateEncryptKey(pubOwner []byte) ([]byte, string, string) {
-	pubOwnerKey := crypto.PublicECDSAFromByte(pubOwner)
+	pubOwnerKey := crypto.PublicFromByte(pubOwner)
 
-	driver := crypto.NewSignDriver(crypto.SECP256k1)
-	priv_r := crypto.PrivateECDSAFromByte(driver.GeneratePrivateKey())
-	priv_u := crypto.PrivateECDSAFromByte(driver.GeneratePrivateKey())
+	priv_r := crypto.PrivateFromByte(crypto.GeneratePrivateKey())
+	priv_u := crypto.PrivateFromByte(crypto.GeneratePrivateKey())
 
 	result := &secp256k1.PublicKey{}
 	result.Curve = pubOwnerKey.Curve
@@ -160,12 +158,11 @@ func GenerateEncryptKey(pubOwner []byte) ([]byte, string, string) {
 }
 
 func GenerateKeyFragments(privOwner []byte, pubRecipient []byte, numSplit, threshold int) ([]*KFrag, error) {
-	driver := crypto.NewSignDriver(crypto.SECP256k1)
-	precursor := crypto.PrivateECDSAFromByte(driver.GeneratePrivateKey())
+	precursor := crypto.PrivateFromByte(crypto.GeneratePrivateKey())
 	precurPub := types.ToHex((*secp256k1.PublicKey)(&precursor.PublicKey).SerializeCompressed())
 
-	privOwnerKey := crypto.PrivateECDSAFromByte(privOwner)
-	pubRecipientKey := crypto.PublicECDSAFromByte(pubRecipient)
+	privOwnerKey := crypto.PrivateFromByte(privOwner)
+	pubRecipientKey := crypto.PublicFromByte(pubRecipient)
 
 	dh_Alice_poit_x := types.ECDH(precursor, pubRecipientKey)
 	dAliceHash, err := blake2b.New256(precursor.X.Bytes())
@@ -211,13 +208,13 @@ func GenerateKeyFragments(privOwner []byte, pubRecipient []byte, numSplit, thres
 }
 
 func AssembleReencryptFragment(privRecipient []byte, reKeyFrags []*ReKeyFrag) ([]byte, error) {
-	privRecipientKey := crypto.PrivateECDSAFromByte(privRecipient)
+	privRecipientKey := crypto.PrivateFromByte(privRecipient)
 	precursor, err := types.FromHex(reKeyFrags[0].PrecurPub)
 	if err != nil {
 		fmt.Errorf("FromHex", err)
 		return nil, err
 	}
-	precursorPubKey := crypto.PublicECDSAFromByte(precursor)
+	precursorPubKey := crypto.PublicFromByte(precursor)
 	dh_Bob_poit_x := types.ECDH(privRecipientKey, precursorPubKey)
 	dBobHash, err := blake2b.New256(precursorPubKey.X.Bytes())
 	if err != nil {

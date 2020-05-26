@@ -3,7 +3,6 @@ package storage
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/33cn/chain33/common"
 	. "github.com/bitly/go-simplejson"
 	"github.com/jpeng-go/chain33-sdk-go/client"
 	"github.com/jpeng-go/chain33-sdk-go/types"
@@ -39,7 +38,7 @@ func ParseStorage(raw json.RawMessage) (interface{}, error) {
 	}
 	if contentStorge, ok := js.CheckGet("contentStorage"); ok {
 		contentHex, _ := contentStorge.Get("content").String()
-		content, _ := common.FromHex(contentHex)
+		content, _ := types.FromHex(contentHex)
 		key, _ := contentStorge.Get("key").String()
 		value, _ := contentStorge.Get("value").String()
 		op, _ := contentStorge.Get("op").Int()
@@ -56,7 +55,7 @@ func ParseStorage(raw json.RawMessage) (interface{}, error) {
 	}
 	if linkStorge, ok := js.CheckGet("linkStorage"); ok {
 		linkHex, _ := linkStorge.Get("link").String()
-		link, _ := common.FromHex(linkHex)
+		link, _ := types.FromHex(linkHex)
 		key, _ := linkStorge.Get("key").String()
 		value, _ := linkStorge.Get("value").String()
 		storage := &types.Storage{Ty: TyLinkStorageAction, Value: &types.Storage_LinkStorage{LinkStorage: &types.LinkNotaryStorage{
@@ -71,7 +70,7 @@ func ParseStorage(raw json.RawMessage) (interface{}, error) {
 	}
 	if hashStorge, ok := js.CheckGet("hashStorage"); ok {
 		hashHex, _ := hashStorge.Get("hash").String()
-		hash, _ := common.FromHex(hashHex)
+		hash, _ := types.FromHex(hashHex)
 		key, _ := hashStorge.Get("key").String()
 		value, _ := hashStorge.Get("value").String()
 		storage := &types.Storage{Ty: TyHashStorageAction, Value: &types.Storage_HashStorage{HashStorage: &types.HashOnlyNotaryStorage{
@@ -87,11 +86,11 @@ func ParseStorage(raw json.RawMessage) (interface{}, error) {
 
 	if encryptStorage, ok := js.CheckGet("encryptStorage"); ok {
 		contentHashHex, _ := encryptStorage.Get("contentHash").String()
-		contentHash, _ := common.FromHex(contentHashHex)
+		contentHash, _ := types.FromHex(contentHashHex)
 		encryptContentHex, _ := encryptStorage.Get("encryptContent").String()
-		encryptContent, _ := common.FromHex(encryptContentHex)
+		encryptContent, _ := types.FromHex(encryptContentHex)
 		nonceHex, _ := encryptStorage.Get("nonce").String()
-		nonce, _ := common.FromHex(nonceHex)
+		nonce, _ := types.FromHex(nonceHex)
 		key, _ := encryptStorage.Get("key").String()
 		value, _ := encryptStorage.Get("value").String()
 		storage := &types.Storage{Ty: TyEncryptStorageAction, Value: &types.Storage_EncryptStorage{EncryptStorage: &types.EncryptNotaryStorage{
@@ -108,11 +107,11 @@ func ParseStorage(raw json.RawMessage) (interface{}, error) {
 	}
 	if encryptStorage, ok := js.CheckGet("encryptShareStorage"); ok {
 		contentHashHex, _ := encryptStorage.Get("contentHash").String()
-		contentHash, _ := common.FromHex(contentHashHex)
+		contentHash, _ := types.FromHex(contentHashHex)
 		encryptContentHex, _ := encryptStorage.Get("encryptContent").String()
-		encryptContent, _ := common.FromHex(encryptContentHex)
+		encryptContent, _ := types.FromHex(encryptContentHex)
 		pubKeyHex, _ := encryptStorage.Get("pubKey").String()
-		pubKey, _ := common.FromHex(pubKeyHex)
+		pubKey, _ := types.FromHex(pubKeyHex)
 		key, _ := encryptStorage.Get("key").String()
 		value, _ := encryptStorage.Get("value").String()
 		storage := &types.Storage{Ty: TyEncryptShareStorageAction, Value: &types.Storage_EncryptShareStorage{EncryptShareStorage: &types.EncryptShareNotaryStorage{
