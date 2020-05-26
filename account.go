@@ -1,7 +1,9 @@
 package sdk
 
 import (
+	"errors"
 	"github.com/jpeng-go/chain33-sdk-go/crypto"
+	"github.com/jpeng-go/chain33-sdk-go/crypto/gm"
 )
 
 type Account struct {
@@ -18,16 +20,27 @@ func NewAccount(signType string) (*Account, error) {
 
 	account := Account{}
 	account.SignType = signType
+	if signType == crypto.SECP256k1 {
+		account.PrivateKey = crypto.GeneratePrivateKey()
+		account.PublicKey  = crypto.PubKeyFromPrivate(account.PrivateKey)
 
-	driver := crypto.NewSignDriver(signType)
-	account.PrivateKey = driver.GeneratePrivateKey()
-	account.PublicKey  = driver.PubKeyFromPrivate(account.PrivateKey)
-
-	addr, err := crypto.PubKeyToAddress(account.PublicKey)
-	if err != nil {
-		return nil, err
+		addr, err := crypto.PubKeyToAddress(account.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+		account.Address = addr
+	} else if signType == crypto.SM2 {
+		account.PrivateKey, account.PublicKey = gm.GenetateKey()
+		addr, err := crypto.PubKeyToAddress(account.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+		account.Address = addr
+	} else if signType == crypto.ED25519 {
+		// TODO
+	} else {
+		return nil, errors.New("sign type not support")
 	}
-	account.Address = addr
 
 	return &account, nil
 }
