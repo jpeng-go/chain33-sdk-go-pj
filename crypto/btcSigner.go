@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"bytes"
 	"crypto/rand"
 	secp256k1 "github.com/btcsuite/btcd/btcec"
 )
@@ -13,7 +14,15 @@ var (
 
 func GeneratePrivateKey() []byte {
 	privKeyBytes := make([]byte, 32)
-	copy(privKeyBytes[:], getRandBytes(32))
+	for {
+		key := getRandBytes(32)
+		if bytes.Compare(key, secp256k1.S256().Params().N.Bytes()) >= 0 {
+			continue
+		}
+		copy(privKeyBytes[:], key)
+		break
+	}
+
 	priv, _ := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKeyBytes[:])
 	copy(privKeyBytes[:], priv.Serialize())
 	return privKeyBytes

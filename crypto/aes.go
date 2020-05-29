@@ -9,6 +9,10 @@ import (
 	"io"
 )
 
+const (
+	AESPrivateKeyLength = 16
+)
+
 func pkcs7Padding(src []byte) []byte {
 	padding := aes.BlockSize - len(src)%aes.BlockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
@@ -94,4 +98,8 @@ func AESCBCPKCS7Decrypt(key, src []byte) ([]byte, error) {
 		return pkcs7UnPadding(pt)
 	}
 	return nil, err
+}
+
+func GenetateAESKey() []byte {
+	return getRandBytes(AESPrivateKeyLength)
 }

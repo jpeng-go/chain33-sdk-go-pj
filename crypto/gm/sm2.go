@@ -1,6 +1,7 @@
 package gm
 
 import (
+	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
@@ -129,7 +130,14 @@ func deserializeSignature(sigStr []byte) (*big.Int, *big.Int, error) {
 func GenetateKey() ([]byte, []byte) {
 	privKeyBytes := [SM2PrivateKeyLength]byte{}
 
-	copy(privKeyBytes[:], getRandBytes(SM2PrivateKeyLength))
+	for {
+		key := getRandBytes(32)
+		if bytes.Compare(key, sm2.P256Sm2().Params().N.Bytes()) >= 0 {
+			continue
+		}
+		copy(privKeyBytes[:], key)
+		break
+	}
 	priv, pub := privKeyFromBytes(sm2.P256Sm2(), privKeyBytes[:])
 
 	return serializePrivateKey(priv), serializePublicKey(pub)
