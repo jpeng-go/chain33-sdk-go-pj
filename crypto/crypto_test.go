@@ -37,6 +37,19 @@ func TestSign(t *testing.T) {
 
 }
 
+func TestSM2(t *testing.T) {
+	priv, pub := gm.GenetateKey()
+	fmt.Println(types.ToHex(pub))
+
+	msg := []byte("sign test")
+
+	sig := gm.SM2Sign(msg, priv, nil)
+	fmt.Printf("sig = %x\n", sig)
+
+	result := gm.SM2Verify(msg, pub, sig, nil)
+	fmt.Println(result)
+}
+
 func TestSM4(t *testing.T) {
 	key := []byte{0x1, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10}
 	fmt.Printf("key = %v\n", key)

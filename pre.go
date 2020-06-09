@@ -81,8 +81,7 @@ func hashToModInt(digest []byte) *big.Int {
 func makeShamirPolyCoeff(threshold int) []*big.Int {
 	coeffs := make([]*big.Int, threshold-1)
 	for i,_ := range coeffs {
-		key := crypto.PrivateFromByte(crypto.GeneratePrivateKey())
-		coeffs[i] = key.D
+		coeffs[i] = new(big.Int).SetBytes(crypto.GeneratePrivateKey())
 	}
 
 	return coeffs
@@ -139,7 +138,7 @@ func getRandomInt(order *big.Int) *big.Int {
 	return randInt
 }
 
-func GenerateEncryptKey(pubOwner []byte) ([]byte, string, string) {
+func GeneratePreEncryptKey(pubOwner []byte) ([]byte, string, string) {
 	pubOwnerKey := crypto.PublicFromByte(pubOwner)
 
 	priv_r := crypto.PrivateFromByte(crypto.GeneratePrivateKey())
@@ -154,7 +153,8 @@ func GenerateEncryptKey(pubOwner []byte) ([]byte, string, string) {
 	pub_r := types.ToHex((*secp256k1.PublicKey)(&priv_r.PublicKey).SerializeCompressed())
 	pub_u := types.ToHex((*secp256k1.PublicKey)(&priv_u.PublicKey).SerializeCompressed())
 
-	return result.SerializeCompressed(), pub_r, pub_u
+
+	return result.SerializeCompressed()[1:], pub_r, pub_u
 }
 
 func GenerateKeyFragments(privOwner []byte, pubRecipient []byte, numSplit, threshold int) ([]*KFrag, error) {

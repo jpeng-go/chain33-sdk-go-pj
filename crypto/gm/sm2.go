@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/tjfoc/gmsm/sm2"
@@ -13,7 +12,6 @@ import (
 
 const (
 	SM2PrivateKeyLength = 32
-	SM2PublicKeyLength  = 65
 )
 
 var	DefaultUID = []byte{0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
@@ -43,26 +41,8 @@ func privKeyFromBytes(curve elliptic.Curve, pk []byte) (*sm2.PrivateKey, *sm2.Pu
 	return priv, &priv.PublicKey
 }
 
-func parsePubKey(pubKeyStr []byte, curve elliptic.Curve) (key *sm2.PublicKey, err error) {
-	pubkey := sm2.PublicKey{}
-	pubkey.Curve = curve
-
-	if len(pubKeyStr) == 0 {
-		return nil, errors.New("pubkey string is empty")
-	}
-
-	pubkey.X = new(big.Int).SetBytes(pubKeyStr[1:33])
-	pubkey.Y = new(big.Int).SetBytes(pubKeyStr[33:])
-	if pubkey.X.Cmp(pubkey.Curve.Params().P) >= 0 {
-		return nil, fmt.Errorf("pubkey X parameter is >= to P")
-	}
-	if pubkey.Y.Cmp(pubkey.Curve.Params().P) >= 0 {
-		return nil, fmt.Errorf("pubkey Y parameter is >= to P")
-	}
-	if !pubkey.Curve.IsOnCurve(pubkey.X, pubkey.Y) {
-		return nil, fmt.Errorf("pubkey isn't on secp256k1 curve")
-	}
-	return &pubkey, nil
+func parsePubKey(pubKeyStr []byte) (key *sm2.PublicKey) {
+	return sm2.Decompress(pubKeyStr)
 }
 
 //SerializePrivateKey 私钥序列化
@@ -73,10 +53,7 @@ func serializePrivateKey(p *sm2.PrivateKey) []byte {
 
 //SerializePublicKey 公钥序列化
 func serializePublicKey(p *sm2.PublicKey) []byte {
-	b := make([]byte, 0, SM2PublicKeyLength)
-	b = append(b, 0x4)
-	b = paddedAppend(32, b, p.X.Bytes())
-	return paddedAppend(32, b, p.Y.Bytes())
+	return sm2.Compress(p)
 }
 
 func paddedAppend(size uint, dst, src []byte) []byte {
@@ -162,12 +139,7 @@ func SM2Verify(msg []byte, publicKey []byte, sig []byte, uid []byte) bool {
 		uid = DefaultUID
 	}
 
-	pub, err := parsePubKey(publicKey[:], sm2.P256Sm2())
-	if err != nil {
-		fmt.Errorf("parse pubkey failed")
-		return false
-	}
-
+	pub := parsePubKey(publicKey[:])
 	r, s, err := deserializeSignature(sig)
 	if err != nil {
 		fmt.Errorf("unmarshal sign failed")
@@ -178,11 +150,7 @@ func SM2Verify(msg []byte, publicKey []byte, sig []byte, uid []byte) bool {
 }
 
 func SM2Encrypt(publicKey []byte, data []byte) ([]byte, error) {
-	pub, err := parsePubKey(publicKey[:], sm2.P256Sm2())
-	if err != nil {
-		fmt.Errorf("parse pubkey failed")
-		return nil, errors.New("parse pubkey failed")
-	}
+	pub := parsePubKey(publicKey[:])
 
 	return sm2.Encrypt(pub, data)
 }
